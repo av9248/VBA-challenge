@@ -1,6 +1,5 @@
 Attribute VB_Name = "Module1"
 Sub stock_loop()
-
 'Loop through all worksheets
 
     Dim ws As Worksheet
@@ -10,7 +9,7 @@ Sub stock_loop()
 'Set a variable for holding the ticker name, the column of interest
         Dim tickername As String
     
-'Set a varable for holding a total count on the total volume of trade
+'Set a variable for holding a total count on the total volume of trade
         Dim tickervolume As Double
         tickervolume = 0
 
@@ -22,6 +21,7 @@ Sub stock_loop()
         Dim open_price As Double
         open_price = ws.Cells(2, 3).Value
 
+'Declare variables
         Dim close_price As Double
         Dim quarterly_change As Double
         Dim percent_change As Double
@@ -34,6 +34,7 @@ Sub stock_loop()
 
 'Count the number of rows in the first column.
         lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+
 
         'Loop through the rows by the ticker names
         
@@ -54,7 +55,7 @@ Sub stock_loop()
               'Print the trade volume for each ticker in the summary table
               ws.Range("L" & summary_ticker_row).Value = tickervolume
 
-              'Now collect information about closing price
+              'Set the closing price
               close_price = ws.Cells(i, 6).Value
 
               'Calculate quarterly change
@@ -72,9 +73,11 @@ Sub stock_loop()
 
               'Print the percent change for each ticker in the summary table
               ws.Range("K" & summary_ticker_row).Value = percent_change
+
+          'Format percent change column
               ws.Range("K" & summary_ticker_row).NumberFormat = "0.00%"
    
-              'Reset the row counter. Add one to the summary_ticker_row
+              'Add one to the summary_ticker_row
               summary_ticker_row = summary_ticker_row + 1
 
               'Reset volume of trade to zero
@@ -93,22 +96,35 @@ Sub stock_loop()
         
         Next i
 
-    'Conditional formatting that will highlight positive change in green and negative change in red
-    'First find the last row of the summary table
+    
+    'Find the last row of the summary table
 
     lastrow_summary_table = ws.Cells(Rows.Count, 9).End(xlUp).Row
     
-    'Color code yearly change
+    
+
+    'Loop from second row to lastrow_summary_table
+
         For i = 2 To lastrow_summary_table
+
+    'if quarterly row is positive, cell interior will be green
+
             If ws.Cells(i, 10).Value > 0 Then
-                ws.Cells(i, 10).Interior.ColorIndex = 10
+
+                ws.Cells(i, 10).Interior.ColorIndex = 4
+
             Else
+
+    'if quarterly row is negative, cell interior will be red
+
                 ws.Cells(i, 10).Interior.ColorIndex = 3
+
             End If
+
         Next i
 
-    'Highlight the stock price changes
-    'First label the cells according to the sample .png provided in the assignment
+    
+    'Label cells
 
         ws.Cells(2, 15).Value = "Greatest % Increase"
         ws.Cells(3, 15).Value = "Greatest % Decrease"
@@ -116,31 +132,68 @@ Sub stock_loop()
         ws.Cells(1, 16).Value = "Ticker"
         ws.Cells(1, 17).Value = "Value"
 
-    'Determine the max and min values in column "Percent Change" and just max in column "Total Stock Volume"
-    'Then collect the ticker name, and the corresponding values for the percent change and total volume of trade for that ticker
-    '
-        For i = 2 To lastrow_summary_table
-            'Find the maximum percent change
-            If ws.Cells(i, 11).Value = Application.WorksheetFunction.Max(ws.Range("K2:K" & lastrow_summary_table)) Then
-                ws.Cells(2, 16).Value = Cells(i, 9).Value
-                ws.Cells(2, 17).Value = Cells(i, 11).Value
-                ws.Cells(2, 17).NumberFormat = "0.00%"
 
-            'Find the minimum percent change
-            ElseIf ws.Cells(i, 11).Value = Application.WorksheetFunction.Min(ws.Range("K2:K" & lastrow_summary_table)) Then
-                ws.Cells(3, 16).Value = Cells(i, 9).Value
-                ws.Cells(3, 17).Value = Cells(i, 11).Value
-                ws.Cells(3, 17).NumberFormat = "0.00%"
-            
-            'Find the maximum volume of trade
-            ElseIf ws.Cells(i, 12).Value = Application.WorksheetFunction.Max(ws.Range("L2:L" & lastrow_summary_table)) Then
-                ws.Cells(4, 16).Value = Cells(i, 9).Value
-                ws.Cells(4, 17).Value = Cells(i, 12).Value
-            
-            End If
+    'Declare variables
+        Dim Greatest_Increase As Double
+        Dim Greatest_Decrease As Double
+        Dim Tickerindex As Integer
+        Dim PercentChangeRange As Range
+        Dim GreatestTotalVolRange As Range
+
         
-        Next i
+
+        ' Set the range where the max and min percent change will be found
+        Set PercentChangeRange = ws.Range("K2", "K" & lastrow_summary_table)
+
+        ' Find the greatest increase using the Max function
+        Greatest_Increase = WorksheetFunction.Max(PercentChangeRange)
+
+        ' Use the Match function to find the cell that hold the greatest increase
+        Tickerindex = WorksheetFunction.Match(Greatest_Increase, PercentChangeRange, 0)
+
+        '  Print the greatest increase & corresponding ticker symbol in the summary table
+        ws.Range("Q2").Value = Greatest_Increase
+ 
+        ws.Range("P2").Value = ws.Range("I" & Tickerindex + 1).Value
+ 
+        ' Find the greatest increase using the Min function
+        Greatest_Decrease = WorksheetFunction.Min(PercentChangeRange)
+
+
+        ' Use the Match function to find the cell that hold the greatest Decrease
+        Tickerindex = WorksheetFunction.Match(Greatest_Decrease, PercentChangeRange, 0)
+
+        ' Print the greatest Decrease & corresponding ticker symbol in the summary tabl
+        ws.Range("Q3").Value = Greatest_Decrease
+ 
+        ws.Range("P3").Value = ws.Range("I" & Tickerindex + 1).Value
+ 
+ 
+ 
+        ' Set the range where the greatest total volume will be found
+        Set GreatestTotalVolRange = ws.Range("L2", "L" & lastrow_summary_table)
+ 
+        ' Find the greatest total volume increase using the Max function
+        Greatest_Total_Volume = WorksheetFunction.Max(GreatestTotalVolRange)
+ 
+        ' Use the Match function to find the cell that hold the greatest total volume
+        Tickerindex = WorksheetFunction.Match(Greatest_Total_Volume, GreatestTotalVolRange, 0)
+ 
+ 
+        ' Print the greatest Decrease & corresponding ticker symbol in the summary tabl
+            ws.Range("Q4").Value = Greatest_Total_Volume
+ 
+            ws.Range("P4").Value = ws.Range("I" & Tickerindex + 1).Value
+
+
+ 
+         'Format the output summary of Greatest_Increase &  to percentage
+            ws.Range("Q2:Q3").NumberFormat = "0.00%"
+
         
-        Next ws
+    
+    
+            Next ws
         
+
 End Sub
